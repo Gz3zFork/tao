@@ -5,9 +5,9 @@ import (
 	"net"
 	"time"
 
+	"github.com/Gz3zFork/tao"
+	"github.com/Gz3zFork/tao/examples/echo"
 	"github.com/leesper/holmes"
-	"github.com/leesper/tao"
-	"github.com/leesper/tao/examples/echo"
 )
 
 func main() {

@@ -1,6 +1,6 @@
 # 一.什么是Tao
 
-[Tao](https://github.com/leesper/tao)，在英文中的意思是“The ultimate principle of universe”，即“道”，它是宇宙的终极奥义。
+[Tao](https://github.com/Gz3zFork/tao)，在英文中的意思是“The ultimate principle of universe”，即“道”，它是宇宙的终极奥义。
 
 > “道生一，一生二，二生三，三生无穷。” ——《道德经》
 
@@ -31,8 +31,8 @@ import (
 	"net"
 
 	"github.com/leesper/holmes"
-	"github.com/leesper/tao"
-	"github.com/leesper/tao/examples/chat"
+	"github.com/Gz3zFork/tao"
+	"github.com/Gz3zFork/tao/examples/chat"
 )
 
 // ChatServer is the chatting server.
