@@ -445,6 +445,10 @@ func (cc *ClientConn) Write(message Message) error {
 	return asyncWrite(cc, message)
 }
 
+func (cc *ClientConn) WriteData(data []byte) error {
+	return asyncWriteData(cc, data)
+}
+
 // RunAt runs a callback at the specified timestamp.
 func (cc *ClientConn) RunAt(timestamp time.Time, callback func(time.Time, WriteCloser)) int64 {
 	id := runAt(cc.ctx, cc.netid, cc.timing, timestamp, callback)
@@ -512,6 +516,37 @@ func runEvery(ctx context.Context, netID int64, timing *TimingWheel, d time.Dura
 	return timing.AddTimer(delay, d, timeout)
 }
 
+func asyncWriteData(c interface{}, pkt []byte) (err error) {
+	defer func() {
+		if p := recover(); p != nil {
+			err = ErrServerClosed
+		}
+	}()
+
+	var (
+		sendCh chan []byte
+	)
+	switch c := c.(type) {
+	case *ServerConn:
+		sendCh = c.sendCh
+	case *ClientConn:
+		sendCh = c.sendCh
+	}
+
+	if err != nil {
+		holmes.Errorf("asyncWrite error %v\n", err)
+		return
+	}
+
+	select {
+	case sendCh <- pkt:
+		err = nil
+	default:
+		err = ErrWouldBlock
+	}
+	return
+}
+
 func asyncWrite(c interface{}, m Message) (err error) {
 	defer func() {
 		if p := recover(); p != nil {
@@ -547,8 +582,11 @@ func asyncWrite(c interface{}, m Message) (err error) {
 	return
 }
 
-/* readLoop() blocking read from connection, deserialize bytes into message,
-then find corresponding handler, put it into channel */
+/*
+	readLoop() blocking read from connection, deserialize bytes into message,
+
+then find corresponding handler, put it into channel
+*/
 func readLoop(c WriteCloser, wg *sync.WaitGroup) {
 	var (
 		rawConn          net.Conn
@@ -625,8 +663,11 @@ func readLoop(c WriteCloser, wg *sync.WaitGroup) {
 	}
 }
 
-/* writeLoop() receive message from channel, serialize it into bytes,
-then blocking write into connection */
+/*
+	writeLoop() receive message from channel, serialize it into bytes,
+
+then blocking write into connection
+*/
 func writeLoop(c WriteCloser, wg *sync.WaitGroup) {
 	var (
 		rawConn net.Conn
